@@ -5,15 +5,15 @@ defmodule Udhcpc do
             port: nil
 
   def start_link(ifname) do
-    GenServer.start_link(__MODULE__, ifname, name: server_name(ifname))
+    GenServer.start_link(__MODULE__, ifname)
   end
 
-  def release(ifname) do
-    GenServer.call(server_name(ifname), :release)
+  def release(pid) do
+    GenServer.call(pid, :release)
   end
 
-  def renew(ifname) do
-    GenServer.call(server_name(ifname), :renew)
+  def renew(pid) do
+    GenServer.call(pid, :renew)
   end
 
 
@@ -77,10 +77,6 @@ defmodule Udhcpc do
   defp signal_udhcpc(port, signal) do
     {:os_pid, os_pid} = Port.info(port, :os_pid)
     System.cmd("sudo kill -#{signal} #{os_pid}")
-  end
-
-  defp server_name(ifname) do
-    Module.concat(__MODULE__, ifname)
   end
 end
 
