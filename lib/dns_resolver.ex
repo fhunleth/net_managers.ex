@@ -13,12 +13,24 @@ defmodule DnsResolver do
             domains: %{},
             nameservers: %{}
 
+  @resolvconf_path "/etc/resolv.conf"
+
   @doc """
+  Return the default `resolve.conf` path for this system.
   """
-  def start_link(resolvconf_path \\ "/etc/resolv.conf") do
-    GenServer.start_link(__MODULE__, resolvconf_path)
+  def default_resolvconf_path do
+    @resolvconf_path
   end
 
+  @doc """
+  """
+  def start_link(resolvconf_path \\ @resolvconf_path, opts \\ []) do
+    GenServer.start_link(__MODULE__, resolvconf_path, opts)
+  end
+
+  @doc """
+  Set the search domain for non fully qualified domain name lookups.
+  """
   def set_domain(pid, ifname, domain) do
     GenServer.call(pid, {:set_domain, ifname, domain})
   end

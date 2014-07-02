@@ -9,6 +9,10 @@ defmodule DnsResolverTest do
     {:ok, server: pid}
   end
 
+  test "resolveconf path" do
+    assert DnsResolver.default_resolvconf_path == "/etc/resolv.conf"
+  end
+
   test "resolvconf created" do
     assert File.exists?(@resolvconf)
   end
