@@ -4,7 +4,7 @@ defmodule Prototest.Mixfile do
   def project do
     [app: :prototest,
      version: "0.0.1",
-     elixir: "~> 0.14.0",
+     elixir: "~> 0.15.0",
      deps: deps]
   end
 
@@ -25,6 +25,9 @@ defmodule Prototest.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:net_basic, github: "fhunleth/net_basic.ex", tag: "master"},
+      {:wpa_supplicant, github: "fhunleth/wpa_supplicant.ex", tag: "master"}
+    ]
   end
 end

@@ -1,4 +1,4 @@
-defmodule DnsResolver do
+defmodule Resolvconf do
   use GenServer
 
   @moduledoc """
@@ -26,6 +26,13 @@ defmodule DnsResolver do
   """
   def start_link(resolvconf_path \\ @resolvconf_path, opts \\ []) do
     GenServer.start_link(__MODULE__, resolvconf_path, opts)
+  end
+
+  @doc """
+
+  """
+  def configure(pid, ifname, options) do
+    GenServer.call(pid, {:configure, ifname, options})
   end
 
   @doc """
@@ -60,7 +67,7 @@ defmodule DnsResolver do
   end
 
   def init(filename) do
-    state = %DnsResolver{filename: filename}
+    state = %Resolvconf{filename: filename}
     write_resolvconf(state)
     {:ok, state}
   end
@@ -77,6 +84,10 @@ defmodule DnsResolver do
     write_resolvconf(state)
     {:reply, :ok, state}
   end
+  def handle_call({:configure, ifname, options}, _from, state) do
+    #TODO
+    {:reply, :ok, state}
+  end
   def handle_call({:clear, ifname}, _from, state) do
     newdomains = Dict.delete(state.domains, ifname)
     newnameservers = Dict.delete(state.nameservers, ifname)
@@ -85,7 +96,7 @@ defmodule DnsResolver do
     {:reply, :ok, state}
   end
   def handle_call(:clear_all, _from, state) do
-    state = %DnsResolver{filename: state.filename}
+    state = %Resolvconf{filename: state.filename}
     write_resolvconf(state)
     {:reply, :ok, state}
   end
