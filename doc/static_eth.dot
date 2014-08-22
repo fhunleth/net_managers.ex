@@ -1,0 +1,13 @@
+digraph g {
+    rankdir=LR;
+    edge[splines="curved"];
+
+    node[shape=point];
+    start;
+
+    node[fixedsize=true, width=1.2, shape=circle];
+
+   start -> down;
+   down -> up [label="on ifup"];
+   up -> down [label="on ifdown"];
+}

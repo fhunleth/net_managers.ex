@@ -1,0 +1,2 @@
+%{"net_basic": {:git, "git://github.com/fhunleth/net_basic.ex.git", "281fba0de67f6e9b3994e7a14201130f59d9923a", [tag: "master"]},
+  "wpa_supplicant": {:git, "git://github.com/fhunleth/wpa_supplicant.ex.git", "66daaf91af273687fd91bc6dd6c8f2ff0d26fafa", [tag: "master"]}}

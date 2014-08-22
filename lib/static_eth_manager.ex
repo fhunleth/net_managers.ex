@@ -14,19 +14,30 @@ defmodule StaticEthManager do
 
   defmodule EventHandler do
     use GenEvent
-    def handle_event({:net_basic, _, :ifchanged, %{ifname <= state.ifname}, manager) do
-      send manager, event
-      {:ok, manager}
+
+    defstruct manager: nil,
+              ifname: nil
+
+    def init(manager, ifname) do
+      {:ok, %EventHandler{manager: manager, ifname: ifname}}
     end
-    def handle_event(event, manager) do
-      send manager, event
-      {:ok, manager}
+
+    def handle_event({:net_basic, _, :ifchanged, %{:ifname => ifname}}=event, %EventHandler{ifname: ifname}=state) do
+      send state.manager, event
+      {:ok, state}
+    end
+    def handle_event(event, state) do
+      send state.manager, event
+      {:ok, state}
     end
   end
 
   def init({netmanager, profile}) do
     resolvconf = NetManager.resolvconf(netmanager)
     net_basic = NetManager.net_basic(netmanager)
+
+    # Register for net_basic events
+    GenEvent.add_handler(net_basic.event_manager(), EventHandler, {self, profile.ifname})
 
     state = %StaticEthManager{resolvconf: resolvconf,
                               net_basic: net_basic,
@@ -38,10 +49,45 @@ defmodule StaticEthManager do
 
     status = NetBasic.status(net_basic, profile.ifname)
 
+    # TODO: if status is up, then send ifup notification
+
     {:ok, state}
   end
 
-  def handle_info({:net_basic, _, :ifchanged, %{}, state) do
+  def handle_info({:net_basic, _, :ifchanged, %{}}, state) do
+defmodule NetManager do
+  use GenServer
+
+  defstruct eventmgr: nil,
+            netbasic: nil
+
+  def start_link(opts // []) do
+    GenServer.start_link(__MODULE__, :noargs, opts)
+  end
+
+  def event_manager(pid) do
+    GenServer.call(pid, :event_manager)
+  end
+  def net_basic(pid) do
+    GenServer.call(pid, :net_basic)
+  end
+
+  def init(_args) do
+    {:ok, eventmgr} = GenEvent.start_link
+    {:ok, netbasic} = NetBasic.start_link
+    state = %NetManager{eventmgr: eventmgr, netbasic: netbasic}
+    {:ok, state}
+  end
+
+  def handle_call(:event_manager, _from, state) do
+    {:reply, state.eventmgr, state}
+  end
+  def handle_call(:net_basic, _from, state) do
+    {:reply, state.eventmgr, state}
+  end
+
+end
+
   end
 
   defp configure(state) do

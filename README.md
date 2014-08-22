@@ -1,13 +1,14 @@
 # Prototest
 
-Most things require root permission to try, so to test on a PC, run:
-
-    export SUDO_ASKPASS=/usr/bin/ssh-askpass
 
 ## Building
 
-This module requires [libmnl](http://netfilter.org/projects/libmnl/) to build.
-If you're running a Debian-based system, you can get it by running:
+## Scripts
 
-    sudo apt-get install libmnl-dev
+```
+{:ok, nm} = NetManager.start_link
+profile = %NetProfile{ifname: "eth0", ipv4_address_method: :static, static_ip: %{ipv4_address: "10.1.1.20", ipv4_subnet_mask: "255.255.255.0"}, static_dns: %{domain: "lkc.com", nameservers: ["8.8.8.8"]}}
+{:ok, sm} = StaticEthManager.start_link(nm, profile)
+
+```
 

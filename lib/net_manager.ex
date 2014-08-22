@@ -4,7 +4,7 @@ defmodule NetManager do
   defstruct eventmgr: nil,
             netbasic: nil
 
-  def start_link(opts // []) do
+  def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, :noargs, opts)
   end
 

@@ -1,0 +1,23 @@
+digraph g {
+    rankdir=LR;
+    edge[splines="curved"];
+
+    node[shape=point];
+    start;
+
+    node[fixedsize=true, width=1.2, shape=circle];
+
+    start -> down;
+    down -> config_wifi [label="on ifup"];
+    config_wifi -> dhcp [label="on wpa_state==COMPLETED"];
+    dhcp -> down [label="on ifdown"];
+    dhcp -> config_wifi [label="on wpa_state!=COMPLETED"];
+    dhcp -> up [label="on dhcp bound"];
+    dhcp -> wait_for_retry [label="on dhcp fail"];
+    up -> wait_for_retry [label="on dhcp fail"];
+    up -> down [label="on ifdown"];
+    up -> config_wifi [label="on wpa_state!=COMPLETED"];
+    wait_for_retry -> dhcp [label="on timeout"];
+    wait_for_retry -> down [label="on ifdown"];
+    wait_for_retry -> config_wifi [label="on wpa_state!=COMPLETED"];
+}
