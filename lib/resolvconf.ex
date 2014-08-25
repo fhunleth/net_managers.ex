@@ -10,8 +10,7 @@ defmodule Resolvconf do
   """
 
   defstruct filename: nil,
-            domains: %{},
-            nameservers: %{}
+            ifmap: %{}
 
   @resolvconf_path "/etc/resolv.conf"
 
@@ -29,10 +28,21 @@ defmodule Resolvconf do
   end
 
   @doc """
+  Set all of the options for this interface in one shot. The following
+  options are available:
 
+    * `:domain` - the local domain name
+    * `:nameservers` - a list of IP addresses of name servers
+
+  Options can be specified either as a keyword list or as a map. E.g.,
+
+    %{domain: "example.com", nameservers: ["8.8.8.8", "8.8.4.4"]}
   """
-  def configure(pid, ifname, options) do
-    GenServer.call(pid, {:configure, ifname, options})
+  def set_config(pid, ifname, options) when is_list(options) do
+    set_config(pid, ifname, :maps.from_list(options))
+  end
+  def set_config(pid, ifname, options) when is_map(options) do
+    GenServer.call(pid, {:set_config, ifname, options})
   end
 
   @doc """
@@ -73,37 +83,47 @@ defmodule Resolvconf do
   end
 
   def handle_call({:set_domain, ifname, domain}, _from, state) do
-    newdomains = Dict.put(state.domains, ifname, domain)
-    state = %{state | domains: newdomains}
+    ifentry = ifentry(state, ifname) |> Dict.put(:domain, domain)
+    state = %{state | ifmap: Dict.put(state.ifmap, ifname, ifentry)}
     write_resolvconf(state)
     {:reply, :ok, state}
   end
   def handle_call({:set_nameservers, ifname, nameservers}, _from, state) do
-    newnameservers = Dict.put(state.nameservers, ifname, nameservers)
-    state = %{state | nameservers: newnameservers}
+    ifentry = ifentry(state, ifname) |> Dict.put(:nameservers, nameservers)
+    state = %{state | ifmap: Dict.put(state.ifmap, ifname, ifentry)}
     write_resolvconf(state)
     {:reply, :ok, state}
   end
-  def handle_call({:configure, ifname, options}, _from, state) do
-    #TODO
+  def handle_call({:set_config, ifname, ifentry}, _from, state) do
+    state = %{state | ifmap: Dict.put(state.ifmap, ifname, ifentry)}
+    write_resolvconf(state)
     {:reply, :ok, state}
   end
   def handle_call({:clear, ifname}, _from, state) do
-    newdomains = Dict.delete(state.domains, ifname)
-    newnameservers = Dict.delete(state.nameservers, ifname)
-    state = %{state | nameservers: newnameservers, domains: newdomains}
+    state = %{state | ifmap: Dict.delete(state.ifmap, ifname)}
     write_resolvconf(state)
     {:reply, :ok, state}
   end
   def handle_call(:clear_all, _from, state) do
-    state = %Resolvconf{filename: state.filename}
+    state = %{state | ifmap: %{}}
     write_resolvconf(state)
     {:reply, :ok, state}
   end
 
+  defp ifentry(state, ifname) do
+    Dict.get(state.ifmap, ifname) || %{}
+  end
+
+  defp domain_text({_ifname, %{:domain => domain}}), do: "search #{domain}\n"
+  defp domain_text(_), do: ""
+  defp nameserver_text({_ifname, %{:nameservers => nslist}}) do
+    for ns <- nslist, do: "nameserver #{ns}\n"
+  end
+  defp nameserver_text(_), do: ""
+
   defp write_resolvconf(state) do
-    domains = for {_ifname, domain} <- state.domains, do: "search #{domain}\n"
-    nameservers = for {_ifname, nslist} <- state.nameservers, ns <- nslist, do: "nameserver #{ns}\n"
+    domains = Enum.map(state.ifmap, &domain_text/1)
+    nameservers = Enum.map(state.ifmap, &nameserver_text/1)
     File.write!(state.filename, domains ++ nameservers)
   end
 end

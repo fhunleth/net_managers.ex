@@ -2,51 +2,52 @@ defmodule PrototestTest do
   use ExUnit.Case
 
   test "create profiles" do
-    profile1 = %NetCfg.Profile{
-      interface: "eth0",
-      ipv4: %NetCfg.Settings.IPv4{
-        mode: :dynamic
-      }
+    profile1 = %NetProfile{
+      ifname: "eth0",
+      ipv4_address_method: :dhcp
     }
 
-    profile2 = %NetCfg.Profile{
-      interface: "eth0",
-      ipv4: %NetCfg.Settings.IPv4{
-        mode: :static,
-        address: "192.168.1.20",
-        subnet: "255.255.255.0",
-        default_route: "192.168.1.1",
+    profile2 = %NetProfile{
+      ifname: "eth0",
+      ipv4_address_method: :static,
+      static_ip: %{
+        ipv4_address: "192.168.1.20",
+        ipv4_subnet_mask: "255.255.255.0",
+        ipv4_gateway: "192.168.1.1"
+      },
+      static_dns: %{
         domain: "lkc.com",
         dns: ["192.168.25.5", "192.168.1.1"]
       }
     }
 
-    profile3 = %NetCfg.Profile{
-      interface: "wlan0",
-      wlan: %NetCfg.Settings.Wlan{
+    profile3 = %NetProfile{
+      ifname: "wlan0",
+      wlan: %{
         ssid: "LKC Tech HQ",
         mode: :infrastructure,
         security: :wpa2,
         password: "somepassword",
       },
-      ipv4: %NetCfg.Settings.IPv4{
-        mode: :dynamic
-      }
+      ipv4_address_method: :dhcp
     }
 
-    profile4 = %NetCfg.Profile{
-      interface: "wlan0",
-      wlan: %NetCfg.Settings.Wlan{
+    profile4 = %NetProfile{
+      ifname: "wlan0",
+      wlan: %{
         ssid: "LKC Tech HQ",
         mode: :infrastructure,
         security: :wpa2,
         password: "somepassword",
       },
-      ipv4: %NetCfg.Settings.IPv4{
-        mode: :static,
-        address: "192.168.1.20",
-        subnet: "255.255.255.0",
-        default_route: "192.168.1.1",
+      ipv4_address_method: :static,
+      static_ip: %{
+        ipv4_address: "192.168.1.20",
+        ipv4_subnet_mask: "255.255.255.0",
+        ipv4_gateway: "192.168.1.1"
+      },
+      static_dns: %{
+        domain: "lkc.com",
         dns: ["192.168.25.5", "192.168.1.1"]
       }
     }

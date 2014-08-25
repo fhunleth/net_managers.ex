@@ -17,20 +17,20 @@ defmodule ResolvconfTest do
     assert File.exists?(@resolvconf)
   end
 
-  test "configure domain", %{server: pid} do
-    Resolvconf.configure(pid, "eth0", domain: "troodon-software.com")
+  test "set_config domain", %{server: pid} do
+    Resolvconf.set_config(pid, "eth0", domain: "troodon-software.com")
     {:ok, contents} = File.read(@resolvconf)
     assert contents == "search troodon-software.com\n"
   end
 
-  test "configure nameserver", %{server: pid} do
-    Resolvconf.configure(pid, "eth0", nameserver: ["192.168.1.1"])
+  test "set_config nameserver", %{server: pid} do
+    Resolvconf.set_config(pid, "eth0", nameservers: ["192.168.1.1"])
     {:ok, contents} = File.read(@resolvconf)
     assert contents == "nameserver 192.168.1.1\n"
   end
 
-  test "configure both", %{server: pid} do
-    Resolvconf.configure(pid, "eth0", domain: "troodon-software.com", nameserver: ["192.168.1.1"])
+  test "set_config both", %{server: pid} do
+    Resolvconf.set_config(pid, "eth0", domain: "troodon-software.com", nameservers: ["192.168.1.1"])
     {:ok, contents} = File.read(@resolvconf)
     assert contents == "search troodon-software.com\nnameserver 192.168.1.1\n"
   end
