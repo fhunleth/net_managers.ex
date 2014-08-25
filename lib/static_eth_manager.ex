@@ -25,13 +25,11 @@ defmodule StaticEthManager do
     end
 
     def handle_event({:net_basic, _, :ifchanged, %{:ifname => ifname}}=event, %EventHandler{ifname: ifname}=state) do
-      Logger.info "Got matching event: #{inspect event}"
       send state.manager, event
       {:ok, state}
     end
     def handle_event(event, state) do
-      Logger.error "Got unmatching event: #{inspect event}"
-      send state.manager, event
+      Logger.error "Ignoring unmatching event: #{inspect event}"
       {:ok, state}
     end
   end
@@ -48,13 +46,9 @@ defmodule StaticEthManager do
                               profile: profile,
                               ifname: profile.ifname}
 
-    # Clean up any old configuration on the interface
-    deconfigure(state)
-
+    # Check the status and set an initial event through based
+    # on whether the interface is up or down
     status = NetBasic.status(net_basic, profile.ifname)
-
-    # TODO: if status is up, then send ifup notification
-    Logger.info "Initial #{state.ifname} status is: #{inspect status}"
     handle_info({:net_basic, net_basic, :ifchanged, status}, state)
 
     {:ok, state}
@@ -63,19 +57,21 @@ defmodule StaticEthManager do
   def handle_info({:net_basic, _, :ifchanged, %{:is_lower_up => true}}, state) do
     Logger.info "#{state.ifname} just came up"
     configure(state)
+    {:noreply, state}
   end
   def handle_info({:net_basic, _, :ifchanged, %{:is_lower_up => false}}, state) do
     Logger.info "#{state.ifname} just went down"
     deconfigure(state)
+    {:noreply, state}
   end
 
   defp configure(state) do
-    :ok = NetBasic.set_config(state.net_basic, state.profile.static_ip)
-    :ok = Resolvconf.configure(state.resolvconf, state.profile.static_dns)
+    :ok = NetBasic.set_config(state.net_basic, state.ifname, state.profile.static_ip)
+    :ok = Resolvconf.set_config(state.resolvconf, state.ifname, state.profile.static_dns)
   end
 
   defp deconfigure(state) do
-    :ok = Resolvconf.clear(state.resolvconf, state.profile.ifname)
+    :ok = Resolvconf.clear(state.resolvconf, state.ifname)
   end
 
 end
