@@ -61,13 +61,19 @@ defmodule Udhcpc do
     GenServer.call(pid, :renew)
   end
 
+  @doc """
+  Stop the dhcp client
+  """
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
+  end
 
   def init({ifname, event_manager}) do
     path = System.find_executable("udhcpc") || raise "udhcpc not found"
     script = :code.priv_dir(:prototest) ++ '/udhcpc.sh'
     args = ['--interface', String.to_char_list(ifname), '--script', script, '--foreground']
       sudo_path = System.find_executable("sudo")
-      args = [path] ++ args
+      args = ['-A', path] ++ args
       path = sudo_path
     IO.inspect path
     IO.inspect args
@@ -90,6 +96,10 @@ defmodule Udhcpc do
     {:reply, :ok, state}
   end
 
+  def handle_cast(:stop, state) do
+    {:stop, :normal, state}
+  end
+
   def handle_info({_, {:data, {:eol, message}}}, state) do
     message
       |> List.to_string
@@ -97,29 +107,31 @@ defmodule Udhcpc do
       |> handle_udhcpc(state)
   end
 
-  defp handle_udhcpc(["deconfig", interface | _rest], state) do
-    IO.puts "Deconfigure #{interface}"
-    GenEvent.notify(state.manager, {:udhcpc, self, {:deconfig, interface}})
+  defp handle_udhcpc(["deconfig", ifname | _rest], state) do
+    IO.puts "Deconfigure #{ifname}"
+    GenEvent.notify(state.manager, {:udhcpc, self, :deconfig, %{ifname: ifname}})
     {:noreply, state}
   end
-  defp handle_udhcpc(["bound", interface, ip, broadcast, subnet, router, domain, dns, _message], state) do
-    IO.puts "Bound #{interface}: IP=#{ip}, dns=#{inspect dns}"
-    GenEvent.notify(state.manager, {:udhcpc, self, {:bound, interface, ip, broadcast, subnet, router, domain, dns}})
+  defp handle_udhcpc(["bound", ifname, ip, broadcast, subnet, router, domain, dns, _message], state) do
+    dnslist = String.split(dns, " ")
+    IO.puts "Bound #{ifname}: IP=#{ip}, dns=#{inspect dns}"
+    GenEvent.notify(state.manager, {:udhcpc, self, :bound, %{ifname: ifname, ipv4_address: ip, ipv4_broadcast: broadcast, ipv4_subnet_mask: subnet, ipv4_gateway: router, domain: domain, nameservers: dnslist}})
     {:noreply, state}
   end
-  defp handle_udhcpc(["renew", interface, ip, broadcast, subnet, router, domain, dns, _message], state) do
-    IO.puts "Renew #{interface}"
-    GenEvent.notify(state.manager, {:udhcpc, self, {:renew, interface, ip, broadcast, subnet, router, domain, dns}})
+  defp handle_udhcpc(["renew", ifname, ip, broadcast, subnet, router, domain, dns, _message], state) do
+    dnslist = String.split(dns, " ")
+    IO.puts "Renew #{ifname}"
+    GenEvent.notify(state.manager, {:udhcpc, self, :renew, %{ifname: ifname, ipv4_address: ip, ipv4_broadcast: broadcast, ipv4_subnet_mask: subnet, ipv4_gateway: router, domain: domain, nameservers: dnslist}})
     {:noreply, state}
   end
-  defp handle_udhcpc(["leasefail", interface, _ip, _broadcast, _subnet, _router, _domain, _dns, message], state) do
-    IO.puts "#{interface}: leasefail #{message}"
-    GenEvent.notify(state.manager, {:udhcpc, self, {:leasefail, interface}})
+  defp handle_udhcpc(["leasefail", ifname, _ip, _broadcast, _subnet, _router, _domain, _dns, message], state) do
+    IO.puts "#{ifname}: leasefail #{message}"
+    GenEvent.notify(state.manager, {:udhcpc, self, :leasefail, %{ifname: ifname, message: message}})
     {:noreply, state}
   end
-  defp handle_udhcpc(["nak", interface, _ip, _broadcast, _subnet, _router, _domain, _dns, message], state) do
-    IO.puts "#{interface}: NAK #{message}"
-    GenEvent.notify(state.manager, {:udhcpc, self, {:nak, interface}})
+  defp handle_udhcpc(["nak", ifname, _ip, _broadcast, _subnet, _router, _domain, _dns, message], state) do
+    IO.puts "#{ifname}: NAK #{message}"
+    GenEvent.notify(state.manager, {:udhcpc, self, :nak, %{ifname: ifname, message: message}})
     {:noreply, state}
   end
   defp handle_udhcpc(something_else, state) do

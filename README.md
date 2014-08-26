@@ -12,3 +12,8 @@ profile = %NetProfile{ifname: "eth0", ipv4_address_method: :static, static_ip: %
 
 ```
 
+```
+{:ok, nm} = NetManager.start_link
+profile = %NetProfile{ifname: "eth0", ipv4_address_method: :dhcp}
+{:ok, sm} = DhcpEthManager.start_link(nm, profile)
+
