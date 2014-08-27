@@ -73,16 +73,12 @@ defmodule Udhcpc do
     path = priv_path ++ '/udhcpc_wrapper'
     script = priv_path ++ '/udhcpc.sh'
     args = ['--interface', String.to_char_list(ifname), '--script', script, '--foreground']
-    IO.inspect path
-    IO.inspect args
     port = Port.open({:spawn_executable, path},
                      [{:args, args}, :exit_status, :stderr_to_stdout, {:line, 256}])
     { :ok, %Udhcpc{ifname: ifname, manager: event_manager, port: port} }
   end
 
   def terminate(_reason, state) do
-    IO.puts "Terminating Udhcpc instance for #{state.ifname}"
-
     # Closing Erlang ports just turns off I/O. That's not good enough for
     # udhcpc. It needs to be killed.
     Port.close(state.port)
@@ -106,7 +102,6 @@ defmodule Udhcpc do
   end
 
   def handle_cast(:stop, state) do
-    IO.puts "Got a stop for udhcpc instance #{state.ifname}"
     {:stop, :normal, state}
   end
 
