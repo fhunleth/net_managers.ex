@@ -69,12 +69,10 @@ defmodule Udhcpc do
   end
 
   def init({ifname, event_manager}) do
-    path = System.find_executable("udhcpc") || raise "udhcpc not found"
-    script = :code.priv_dir(:prototest) ++ '/udhcpc.sh'
+    priv_path = :code.priv_dir(:prototest)
+    path = priv_path ++ '/udhcpc_wrapper'
+    script = priv_path ++ '/udhcpc.sh'
     args = ['--interface', String.to_char_list(ifname), '--script', script, '--foreground']
-      sudo_path = System.find_executable("sudo")
-      args = ['-A', path] ++ args
-      path = sudo_path
     IO.inspect path
     IO.inspect args
     port = Port.open({:spawn_executable, path},
@@ -82,21 +80,33 @@ defmodule Udhcpc do
     { :ok, %Udhcpc{ifname: ifname, manager: event_manager, port: port} }
   end
 
+  def terminate(_reason, state) do
+    IO.puts "Terminating Udhcpc instance for #{state.ifname}"
+
+    # Closing Erlang ports just turns off I/O. That's not good enough for
+    # udhcpc. It needs to be killed.
+    Port.close(state.port)
+    :ok
+  end
+
   def handle_call(:event_manager, _from, state) do
     {:reply, state.manager, state}
   end
 
   def handle_call(:renew, _from, state) do
-    signal_udhcpc(state.port, "USR1")
+    # If we send a byte with the value 1 to the wrapper, it will turn it into
+    # a SIGUSR1 for udhcpc so that it renews the IP address.
+    Port.command(state.port, <<1>>);
     {:reply, :ok, state}
   end
 
   def handle_call(:release, _from, state) do
-    signal_udhcpc(state.port, "USR2")
+    Port.command(state.port, <<2>>);
     {:reply, :ok, state}
   end
 
   def handle_cast(:stop, state) do
+    IO.puts "Got a stop for udhcpc instance #{state.ifname}"
     {:stop, :normal, state}
   end
 
@@ -138,11 +148,6 @@ defmodule Udhcpc do
     msg = List.foldl(something_else, "", &<>/2)
     IO.puts "Got info message: #{msg}"
     {:noreply, state}
-  end
-
-  defp signal_udhcpc(port, signal) do
-    {:os_pid, os_pid} = Port.info(port, :os_pid)
-    System.cmd("sudo kill -#{signal} #{os_pid}")
   end
 end
 

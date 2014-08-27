@@ -1,3 +1,10 @@
+defmodule Mix.Tasks.Compile.Prototest do
+  @shortdoc "Compiles the port binary"
+  def run(_) do
+    0=Mix.Shell.IO.cmd("make priv/udhcpc_wrapper")
+  end
+end
+
 defmodule Prototest.Mixfile do
   use Mix.Project
 
@@ -5,7 +12,11 @@ defmodule Prototest.Mixfile do
     [app: :prototest,
      version: "0.0.1",
      elixir: "~> 0.15.0",
-     deps: deps]
+	 compilers: [:Prototest, :elixir, :app],
+     deps: deps,
+     package: package,
+     description: description
+	]
   end
 
   # Configuration for the OTP application
@@ -13,6 +24,19 @@ defmodule Prototest.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger]]
+  end
+
+  defp description do
+    """
+    Test of IP network configuration.
+    """
+  end
+
+  defp package do
+    %{files: ["lib", "src/*.[ch]", "test", "mix.exs", "README.md", "LICENSE", "Makefile"],
+      contributors: ["Frank Hunleth"],
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/fhunleth/prototest"}}
   end
 
   # Dependencies can be hex.pm packages:

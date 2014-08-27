@@ -136,8 +136,8 @@ defmodule DhcpEthManager do
   end
   defp start_udhcpc(state) do
     state = stop_udhcpc(state)
-    udhcpc = Udhcpc.start_link(state.ifname, NetBasic.event_manager(state.net_basic))
-    %DhcpEthManager{state | dhcp_pid: udhcpc}
+    {:ok, pid} = Udhcpc.start_link(state.ifname, NetBasic.event_manager(state.net_basic))
+    %DhcpEthManager{state | dhcp_pid: pid}
   end
 
   defp configure(state, info) do
