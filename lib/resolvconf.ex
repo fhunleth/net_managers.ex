@@ -114,7 +114,7 @@ defmodule Resolvconf do
     Dict.get(state.ifmap, ifname) || %{}
   end
 
-  defp domain_text({_ifname, %{:domain => domain}}), do: "search #{domain}\n"
+  defp domain_text({_ifname, %{:domain => domain}}) when domain != "", do: "search #{domain}\n"
   defp domain_text(_), do: ""
   defp nameserver_text({_ifname, %{:nameservers => nslist}}) do
     for ns <- nslist, do: "nameserver #{ns}\n"

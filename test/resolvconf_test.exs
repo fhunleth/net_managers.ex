@@ -23,6 +23,12 @@ defmodule ResolvconfTest do
     assert contents == "search troodon-software.com\n"
   end
 
+  test "set_config empty domain", %{server: pid} do
+    Resolvconf.set_config(pid, "eth0", domain: "")
+    {:ok, contents} = File.read(@resolvconf)
+    assert contents == ""
+  end
+
   test "set_config nameserver", %{server: pid} do
     Resolvconf.set_config(pid, "eth0", nameservers: ["192.168.1.1"])
     {:ok, contents} = File.read(@resolvconf)

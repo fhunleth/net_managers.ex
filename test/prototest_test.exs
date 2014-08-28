@@ -36,9 +36,8 @@ defmodule PrototestTest do
       ifname: "wlan0",
       wlan: %{
         ssid: "LKC Tech HQ",
-        mode: :infrastructure,
-        security: :wpa2,
-        password: "somepassword",
+        key_mgmt: :WPA_PSK,
+        psk: "somepassword",
       },
       ipv4_address_method: :static,
       static_ip: %{
