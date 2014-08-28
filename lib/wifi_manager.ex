@@ -45,6 +45,10 @@ defmodule WifiManager do
       send state.manager, :wifi_connected
       {:ok, state}
     end
+    def handle_event({:wpa_supplicant, _, :"CTRL-EVENT-DISCONNECTED"}, state) do
+      send state.manager, :wifi_disconnected
+      {:ok, state}
+    end
 
     # DHCP events
     # :bound, :renew, :deconfig, :nak
@@ -134,6 +138,11 @@ defmodule WifiManager do
       |> stop_udhcpc
       |> goto_context(:down)
   end
+  defp consume(:dhcp, :wifi_disconnected, state) do
+    state
+      |> stop_udhcpc
+      |> goto_context(:associate_wifi)
+  end
 
   ## Context: :up
   defp consume(:up, :ifup, state), do: state
@@ -142,6 +151,11 @@ defmodule WifiManager do
       |> stop_udhcpc
       |> deconfigure
       |> goto_context(:down)
+  end
+  defp consume(:up, :wifi_disconnected, state) do
+    state
+      |> stop_udhcpc
+      |> goto_context(:associate_wifi)
   end
 
   ## Context: :wait_for_retry
