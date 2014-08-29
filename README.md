@@ -20,7 +20,12 @@ profile = %NetProfile{ifname: "eth0", ipv4_address_method: :dhcp}
 
 ```
 {:ok, nm} = NetManager.start_link
-profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ-guest", key_mgmt: :WPA_PSK, psk: "mango34"}}
+profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ", key_mgmt: :"WPA-PSK", psk: :a5862fabafd36b29645d5cd82df529f3bdc2a07549055cfa7c250697afae7fdb}}
+{:ok, sm} = WifiManager.start_link(nm, profile)
+```
+```
+{:ok, nm} = NetManager.start_link
+profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ-guest", key_mgmt: :NONE}}
 {:ok, sm} = WifiManager.start_link(nm, profile)
 ```
 

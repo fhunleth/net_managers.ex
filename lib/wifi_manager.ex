@@ -58,7 +58,7 @@ defmodule WifiManager do
     end
 
     def handle_event(event, state) do
-      Logger.error "WifiManager: ignoring unmatching event: #{inspect event}"
+      Logger.info "WifiManager: ignoring unmatching event: #{inspect event}"
       {:ok, state}
     end
   end
