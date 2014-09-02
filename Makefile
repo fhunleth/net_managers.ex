@@ -11,10 +11,17 @@
 
 LDFLAGS += -lmnl
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
-CC ?= $(CROSSCOMPILER)gcc
+CC ?= $(CROSSCOMPILE)gcc
 MIX ?= mix
+
+# If not cross-compiling, then run sudo by default
+ifeq ($(origin CROSSCOMPILE), undefined)
 SUDO_ASKPASS ?= /usr/bin/ssh-askpass
 SUDO ?= sudo
+else
+# If cross-compiling, then permissions need to be set some build system-dependent way
+SUDO ?= true
+endif
 
 all: compile
 
