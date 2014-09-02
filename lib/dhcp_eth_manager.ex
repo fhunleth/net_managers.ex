@@ -55,6 +55,9 @@ defmodule DhcpEthManager do
     net_basic = NetManager.net_basic(netmanager)
     event_manager = NetBasic.event_manager(net_basic)
 
+    # Make sure that the interface is enabled or nothing will work.
+    :ok = NetBasic.ifup(net_basic, profile.ifname)
+
     # Register for net_basic events
     GenEvent.add_handler(event_manager, EventHandler, {self, profile.ifname})
 

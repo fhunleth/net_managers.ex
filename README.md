@@ -24,6 +24,7 @@ profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid:
 {:ok, sm} = WifiManager.start_link(nm, profile)
 ```
 ```
+System.cmd("/usr/sbin/wpa_supplicant", ["-iwlan0", "-C/var/run/wpa_supplicant", "-B"])
 {:ok, nm} = NetManager.start_link
 profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ-guest", key_mgmt: :NONE}}
 {:ok, sm} = WifiManager.start_link(nm, profile)

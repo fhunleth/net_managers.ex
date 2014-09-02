@@ -12,7 +12,6 @@ defmodule StaticEthManager do
   end
 
 
-
   defmodule EventHandler do
     use GenEvent
 
@@ -38,6 +37,9 @@ defmodule StaticEthManager do
     resolvconf = NetManager.resolvconf(netmanager)
     net_basic = NetManager.net_basic(netmanager)
 
+    # Make sure that the interface is enabled or nothing will work.
+    :ok = NetBasic.ifup(net_basic, profile.ifname)
+
     # Register for net_basic events
     GenEvent.add_handler(NetBasic.event_manager(net_basic), EventHandler, {self, profile.ifname})
 
@@ -46,7 +48,7 @@ defmodule StaticEthManager do
                               profile: profile,
                               ifname: profile.ifname}
 
-    # Check the status and set an initial event through based
+    # Check the status and send an initial event through based
     # on whether the interface is up or down
     status = NetBasic.status(net_basic, profile.ifname)
     handle_info({:net_basic, net_basic, :ifchanged, status}, state)
