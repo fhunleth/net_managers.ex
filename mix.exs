@@ -23,7 +23,7 @@ defmodule Prototest.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :net_basic, :wpa_supplicant]]
   end
 
   defp description do
