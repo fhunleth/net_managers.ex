@@ -124,6 +124,7 @@ defmodule WifiManager do
       |> start_udhcpc
       |> goto_context(:dhcp)
   end
+  defp consume(:associate_wifi, :wifi_disconnected, state), do: state
 
   ## Context: :dhcp
   defp consume(:dhcp, :ifup, state), do: state
