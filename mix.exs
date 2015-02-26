@@ -1,18 +1,18 @@
-defmodule Mix.Tasks.Compile.Prototest do
+defmodule Mix.Tasks.Compile.NetManagers do
   @shortdoc "Compiles the port binary"
   def run(_) do
     0=Mix.Shell.IO.cmd("make priv/udhcpc_wrapper")
   end
 end
 
-defmodule Prototest.Mixfile do
+defmodule NetManagers.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :prototest,
+    [app: :net_managers,
      version: "0.0.1",
      elixir: "~> 1.0.0",
-	 compilers: [:Prototest, :elixir, :app],
+	 compilers: [:NetManagers, :elixir, :app],
      deps: deps,
      package: package,
      description: description
@@ -36,7 +36,7 @@ defmodule Prototest.Mixfile do
     %{files: ["lib", "src/*.[ch]", "test", "mix.exs", "README.md", "LICENSE", "Makefile"],
       contributors: ["Frank Hunleth"],
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/fhunleth/prototest"}}
+      links: %{"GitHub" => "https://github.com/fhunleth/net_managers.ex"}}
   end
 
   # Dependencies can be hex.pm packages:

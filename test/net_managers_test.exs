@@ -1,4 +1,4 @@
-defmodule PrototestTest do
+defmodule NetManagersTest do
   use ExUnit.Case
 
   test "create profiles" do

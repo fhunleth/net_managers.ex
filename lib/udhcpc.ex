@@ -69,7 +69,7 @@ defmodule Udhcpc do
   end
 
   def init({ifname, event_manager}) do
-    priv_path = :code.priv_dir(:prototest)
+    priv_path = :code.priv_dir(:net_managers)
     path = priv_path ++ '/udhcpc_wrapper'
     script = priv_path ++ '/udhcpc.sh'
     args = ['--interface', String.to_char_list(ifname), '--script', script, '--foreground']
