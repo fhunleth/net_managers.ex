@@ -1,4 +1,4 @@
-# Prototest
+# net_managers.ex
 
 
 ## Building
@@ -19,8 +19,9 @@ profile = %NetProfile{ifname: "eth0", ipv4_address_method: :dhcp}
 ```
 
 ```
+System.cmd("/usr/sbin/wpa_supplicant", ["-iwlan0", "-C/var/run/wpa_supplicant", "-B"])
 {:ok, nm} = NetManager.start_link
-profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ", key_mgmt: :"WPA-PSK", psk: :a5862fabafd36b29645d5cd82df529f3bdc2a07549055cfa7c250697afae7fdb}}
+profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "LKC Tech HQ", key_mgmt: :"WPA-PSK", psk: "testtest"}}
 {:ok, sm} = WifiManager.start_link(nm, profile)
 ```
 ```
@@ -31,6 +32,7 @@ profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid:
 ```
 
 ```
+System.cmd("/usr/sbin/wpa_supplicant", ["-iwlan0", "-C/var/run/wpa_supplicant", "-B"])
 {:ok, nm} = NetManager.start_link
 profile = %NetProfile{ifname: "wlan0", ipv4_address_method: :dhcp, wlan: %{ssid: "coderdojodc-5ghz", key_mgmt: :NONE}}
 {:ok, sm} = WifiManager.start_link(nm, profile)

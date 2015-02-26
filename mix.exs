@@ -11,7 +11,7 @@ defmodule Prototest.Mixfile do
   def project do
     [app: :prototest,
      version: "0.0.1",
-     elixir: "~> 1.0.0-rc1",
+     elixir: "~> 1.0.0",
 	 compilers: [:Prototest, :elixir, :app],
      deps: deps,
      package: package,
