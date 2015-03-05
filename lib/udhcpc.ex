@@ -70,13 +70,17 @@ defmodule Udhcpc do
 
   def init({ifname, event_manager}) do
     priv_path = :code.priv_dir(:net_managers)
-    path = priv_path ++ '/udhcpc_wrapper'
-    script = priv_path ++ '/udhcpc.sh'
-    args = ['--interface', String.to_char_list(ifname), '--script', script, '--foreground']
-    port = Port.open({:spawn_executable, path},
+    args = ["--interface", ifname,
+            "--script", "#{priv_path}/udhcpc.sh",
+            "--foreground"]
+          |> add_hostname_arg(hostname)
+    port = Port.open({:spawn_executable, "#{priv_path}/udhcpc_wrapper"},
                      [{:args, args}, :exit_status, :stderr_to_stdout, {:line, 256}])
     { :ok, %Udhcpc{ifname: ifname, manager: event_manager, port: port} }
   end
+
+  defp add_hostname_arg(args, "noname"), do: args
+  defp add_hostname_arg(args, name), do: args ++ ["-x", "hostname:#{name}"]
 
   def terminate(_reason, state) do
     # Closing Erlang ports just turns off I/O. That's not good enough for
@@ -143,6 +147,15 @@ defmodule Udhcpc do
     msg = List.foldl(something_else, "", &<>/2)
     IO.puts "Got info message: #{msg}"
     {:noreply, state}
+  end
+
+  defp hostname() do
+    # Turn :sname@host into a hostname
+    # Returns "nohost" if Erlang distribution not enabled
+    node
+      |> to_string
+      |> String.split("@")
+      |> Enum.at(1)
   end
 end
 
