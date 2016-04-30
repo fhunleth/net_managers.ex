@@ -1,2 +1,6 @@
-%{"net_basic": {:git, "git://github.com/fhunleth/net_basic.ex.git", "75874b30085acd475bc30d68913e2e171b0badb0", [tag: "master"]},
-  "wpa_supplicant": {:git, "git://github.com/fhunleth/wpa_supplicant.ex.git", "2a938ea67659b49e35141610ae97c9b906084a8c", [tag: "master"]}}
+%{"bunt": {:hex, :bunt, "0.1.5"},
+  "credo": {:hex, :credo, "0.3.13"},
+  "earmark": {:hex, :earmark, "0.2.1"},
+  "ex_doc": {:hex, :ex_doc, "0.11.5"},
+  "net_basic": {:git, "https://github.com/fhunleth/net_basic.ex.git", "1bcb806e5ca5f2acf4c18ce7049968a94fffd30f", [tag: "master"]},
+  "wpa_supplicant": {:git, "https://github.com/fhunleth/wpa_supplicant.ex.git", "69dbe80e8fb00488c4effd245045a6561238836b", [tag: "master"]}}

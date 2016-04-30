@@ -1,7 +1,9 @@
 defmodule Mix.Tasks.Compile.NetManagers do
   @shortdoc "Compiles the port binary"
   def run(_) do
-    0=Mix.Shell.IO.cmd("make priv/udhcpc_wrapper")
+    {result, _error_code} = System.cmd("make", ["priv/udhcpc_wrapper"], stderr_to_stdout: true)
+    IO.binwrite result
+    Mix.Project.build_structure
   end
 end
 
@@ -11,9 +13,12 @@ defmodule NetManagers.Mixfile do
   def project do
     [app: :net_managers,
      version: "0.0.1",
-     elixir: "~> 1.0.0",
-	 compilers: [:NetManagers, :elixir, :app],
+     elixir: "~> 1.2",
+     build_embedded: Mix.env == :prod,
+     start_permanent: Mix.env == :prod,
+     compilers: Mix.compilers ++ [:NetManagers],
      deps: deps,
+     docs: [extras: ["README.md"]],
      package: package,
      description: description
 	]
@@ -39,17 +44,11 @@ defmodule NetManagers.Mixfile do
       links: %{"GitHub" => "https://github.com/fhunleth/net_managers.ex"}}
   end
 
-  # Dependencies can be hex.pm packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
     [
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev},
+      {:credo, "~> 0.3", only: [:dev, :test]},
       {:net_basic, github: "fhunleth/net_basic.ex", tag: "master"},
       {:wpa_supplicant, github: "fhunleth/wpa_supplicant.ex", tag: "master"}
     ]
