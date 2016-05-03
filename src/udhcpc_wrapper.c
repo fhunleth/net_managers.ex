@@ -118,7 +118,7 @@ static void force_identity()
         errx(EXIT_FAILURE, "Can't elevate to root permissions required by udhdpc");
 }
 
-int main(int argc, char *argv[])
+static void run_udhcpc(int argc, char *argv[])
 {
     // Make sure the udhcpc has permission to run before going farther.
     force_identity();
@@ -144,6 +144,41 @@ int main(int argc, char *argv[])
         child(argc, argv);
     else
         parent();
+}
+
+static const char *getenv_nonull(const char *key)
+{
+    const char *result = getenv(key);
+    return result != NULL ? result : "";
+}
+
+static void process_udhcpc_callback(int argc, char *argv[])
+{
+    // If the user tells udhcpc to call this program as the script
+    // (--script option), format and print the udhcpc result nicely.
+
+    printf("%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+           argv[1],
+            getenv_nonull("interface"),
+            getenv_nonull("ip"),
+            getenv_nonull("broadcast"),
+            getenv_nonull("subnet"),
+            getenv_nonull("router"),
+            getenv_nonull("domain"),
+            getenv_nonull("dns"),
+            getenv_nonull("message")
+            );
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+        errx(EXIT_FAILURE, "Pass at least one parameter. For example, \"udhcpc\" to start up udhcpc.");
+
+    if (strcmp(argv[1], "udhcpc") == 0)
+        run_udhcpc(argc - 1, &argv[1]);
+    else
+        process_udhcpc_callback(argc, argv);
 
     exit(EXIT_SUCCESS);
 }

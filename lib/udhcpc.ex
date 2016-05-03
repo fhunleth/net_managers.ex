@@ -70,11 +70,13 @@ defmodule Udhcpc do
 
   def init({ifname, event_manager}) do
     priv_path = :code.priv_dir(:net_managers)
-    args = ["--interface", ifname,
-            "--script", "#{priv_path}/udhcpc.sh",
+    port_path = "#{priv_path}/udhcpc_wrapper"
+    args = ["udhcpc",
+            "--interface", ifname,
+            "--script", port_path,
             "--foreground"]
           |> add_hostname_arg(hostname)
-    port = Port.open({:spawn_executable, "#{priv_path}/udhcpc_wrapper"},
+    port = Port.open({:spawn_executable, port_path},
                      [{:args, args}, :exit_status, :stderr_to_stdout, {:line, 256}])
     { :ok, %Udhcpc{ifname: ifname, manager: event_manager, port: port} }
   end
